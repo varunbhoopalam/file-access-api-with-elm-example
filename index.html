@@ -24,18 +24,35 @@
             node: document.getElementById('myapp')
         });
 
-        let file;
+        let fileHandle;
 
         app.ports.sendMessage.subscribe(async function (message) {
-            file = await fileOpen();
+            const file = await fileOpen();
+            fileHandle = file.handle;
             app.ports.messageReceiver.send(await file.text())
         });
 
+        async function getNewFileHandle() {
+            const options = {
+                types: [
+                    {
+                        description: 'Slipbox.json',
+                        accept: {
+                        'text/plain': ['.json'],
+                    },
+                },
+                ],
+            };
+            const handle = await window.showSaveFilePicker(options);
+            return handle;
+        }
+
         app.ports.save.subscribe(async function (message) {
-            await fileSave(message, {}, file.handle);
+            if (fileHandle === undefined) {
+                fileHandle = await getNewFileHandle()
+            }
+            await fileSave(message, {}, fileHandle);
         })
-
-
     </script>
 </body>
 
