@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>This is the title of the webpage!</title>
+    <script type="text/javascript" src="elm.js"></script>
+</head>
+
+<body>
+    <div id="myapp"></div>
+    <script type="module">
+        import {
+            fileOpen,
+            fileSave,
+        } from 'https://unpkg.com/browser-nativefs';
+
+        window.fileOpen = fileOpen
+        window.fileSave = fileSave
+    </script>
+    <script type="text/javascript">
+
+        // Start the Elm application.
+        var app = Elm.Main.init({
+            node: document.getElementById('myapp')
+        });
+
+        let file;
+
+        app.ports.sendMessage.subscribe(async function (message) {
+            file = await fileOpen();
+            app.ports.messageReceiver.send(await file.text())
+        });
+
+        app.ports.save.subscribe(async function (message) {
+            await fileSave(message, {}, file.handle);
+        })
+
+
+    </script>
+</body>
+
+</html>
